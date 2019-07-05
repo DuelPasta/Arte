@@ -1,6 +1,18 @@
-public class Main {
+import javafx.application.Application;
+import javafx.stage.FileChooser;
+import java.io.File;
+import Controller.Parser;
+import javafx.stage.Stage;
 
-    public static void main(String[] args) {
-        
+public class Main extends Application {
+
+    public void start(Stage primaryStage) {
+
+        FileChooser configFileChooser = new FileChooser();
+        File configFile = configFileChooser.showOpenDialog(null);
+        Parser parser = new Parser(configFile);
+        parser.parse();
+        System.exit(1);
+
     }
 }
