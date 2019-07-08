@@ -19,7 +19,7 @@ public class Parser {
     private List<List> commandList = new ArrayList<>();
 
     private final static String blockCommand = "%";
-    private StringBuilder templine;
+    private List<String> templine = new ArrayList<>();
 
     private Settings settings = new Settings();
     private File file;
@@ -50,21 +50,22 @@ public class Parser {
                 parseAmCommand();
             }
         }
+
+        System.out.println("ADD COMMAND EXECUTED" + ADcommand);
+        System.out.println("AM COMMAND EXECUTED" + AMCommand);
     }
 
     private void parseAmCommand() {
         while (!line.substring(line.length() - 1).equals(blockCommand)) {
-            templine.append(line);
+            templine.add(line);
             line = scan.next();
         }
-        AMCommand.add(line);
-        System.out.println("AM COMMAND EXECUTED" + AMCommand);
-
-
+        templine.add(line);
+        AMCommand.add(templine.toString());
     }
 
     private void parseAdCommand() {
         ADcommand.add(line);
-        System.out.println("ADD COMMAND EXECUTED" + ADcommand);
+
     }
 }
