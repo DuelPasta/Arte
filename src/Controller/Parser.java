@@ -11,12 +11,10 @@ import java.util.Scanner;
 public class Parser {
 
     private Scanner scan;
-
     private String line;
 
-    private List<String> ADcommand = new ArrayList<>();
-    private List<String> AMCommand = new ArrayList<>();
-    private List<List> commandList = new ArrayList<>();
+    private ArrayList<String> ADCommand = new ArrayList<>();
+    private ArrayList<String> AMCommand = new ArrayList<>();
 
     private final static String blockCommand = "%";
     private List<String> templine = new ArrayList<>();
@@ -24,6 +22,9 @@ public class Parser {
     private Settings settings = new Settings();
     private File file;
     private String filelocation;
+
+    private ApertureTemplateDictionary apertureTemplate;
+    private ApertureDictionary aperture;
 
     public Parser(File file) {
         this.file = file;
@@ -51,21 +52,25 @@ public class Parser {
             }
         }
 
-        System.out.println("ADD COMMAND EXECUTED" + ADcommand);
-        System.out.println("AM COMMAND EXECUTED" + AMCommand);
+        apertureTemplate = new ApertureTemplateDictionary(AMCommand);
+        aperture = new ApertureDictionary(ADCommand);
+
+
     }
 
     private void parseAmCommand() {
+
         while (!line.substring(line.length() - 1).equals(blockCommand)) {
             templine.add(line);
             line = scan.next();
         }
         templine.add(line);
         AMCommand.add(templine.toString());
+        templine.clear();
+
     }
 
     private void parseAdCommand() {
-        ADcommand.add(line);
-
+        ADCommand.add(line);
     }
 }
