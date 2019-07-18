@@ -25,4 +25,16 @@ public class Circle extends Shape {
         return getX() / getThickness();
 
     }
+
+    @Override
+    public String getOutput() {
+        return String.format("DCode: %-7.0f  \"%-9s\" \t - %5.3fmm - \t \t \t Area: %6.3fmm² \t Area Ratio: %5.2f \t Transfer Effeciency: %2.1f \t Number of apertures: %-5.0f"
+                , (double) getdCode()
+                , getShape()
+                , getX() * 2
+                , getArea()
+                , getAreaRatio()
+                , getTransferEffeciency()
+                , (double) getNumbOfApertures());
+    }
 }

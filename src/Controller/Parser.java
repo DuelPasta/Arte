@@ -15,6 +15,8 @@ public class Parser {
 
     private ArrayList<String> ADCommand = new ArrayList<>();
     private ArrayList<String> AMCommand = new ArrayList<>();
+    private ArrayList<String> PolygonCommand = new ArrayList<>();
+
 
     private final static String blockCommand = "%";
     private List<String> templine = new ArrayList<>();
@@ -23,15 +25,15 @@ public class Parser {
     private File file;
     private String filelocation;
 
-    private ApertureTemplateDictionary apertureTemplate;
-    private ApertureDictionary aperture;
-
     public Parser(File file) {
         this.file = file;
         this.filelocation = file.getParent();
     }
 
     public void parse() {
+        ApertureDictionary aperture = new ApertureDictionary();
+        ApertureTemplateDictionary apertureTemplate = new ApertureTemplateDictionary();
+
         try {
             scan = new Scanner(file);
 
@@ -49,13 +51,14 @@ public class Parser {
                 parseAdCommand();
             } else if (line.substring(0, 1).equals(blockCommand) && !line.substring(line.length() - 1).equals(blockCommand)) {
                 parseAmCommand();
+            } else if (line.contains("G36")) {
+                parsePolygons();
             }
         }
-
-        apertureTemplate = new ApertureTemplateDictionary(AMCommand);
-        aperture = new ApertureDictionary(ADCommand);
-
-
+        aperture.addApertures(ADCommand);
+        apertureTemplate.addApertures(AMCommand);
+        aperture.addToAperturesList(apertureTemplate.getMacros());
+        aperture.showApertures();
     }
 
     private void parseAmCommand() {
@@ -72,5 +75,17 @@ public class Parser {
 
     private void parseAdCommand() {
         ADCommand.add(line);
+    }
+
+    private void parseSettings() {
+
+    }
+
+    private void parsePolygons() {
+
+    }
+
+    private void parseFlashes() {
+
     }
 }
