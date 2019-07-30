@@ -20,8 +20,6 @@ public class ApertureDictionary {
 
     public void addApertures(ArrayList<String> apertures) {
         for (String command : apertures) {
-            System.out.println(command);
-
 
             Matcher matcher = REGEX_FIND_PADS.matcher(command);
             int dCode;
@@ -62,6 +60,10 @@ public class ApertureDictionary {
         for (Shape aperture : aperturesList) {
             System.out.println(aperture.getOutput());
         }
+    }
+
+    public void addPolygons(ArrayList<Polygon> polygonCommand) {
+        aperturesList.addAll(polygonCommand);
     }
 }
 

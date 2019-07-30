@@ -5,8 +5,11 @@ import Model.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Parser {
 
@@ -15,7 +18,7 @@ public class Parser {
 
     private ArrayList<String> ADCommand = new ArrayList<>();
     private ArrayList<String> AMCommand = new ArrayList<>();
-    private ArrayList<String> PolygonCommand = new ArrayList<>();
+    private ArrayList<Polygon> PolygonCommand = new ArrayList<>();
 
 
     private final static String blockCommand = "%";
@@ -47,15 +50,19 @@ public class Parser {
             line = scan.next();
             System.out.println(line);
 
-            if (line.substring(0, 1).equals(blockCommand) && line.substring(line.length() - 1).equals(blockCommand)) {
+            if (line.contains("FSLA") || line.contains("MO")) {
+                parseSettings();
+            } else if (line.substring(0, 1).equals(blockCommand) && line.substring(line.length() - 1).equals(blockCommand)) {
                 parseAdCommand();
             } else if (line.substring(0, 1).equals(blockCommand) && !line.substring(line.length() - 1).equals(blockCommand)) {
                 parseAmCommand();
             } else if (line.contains("G36")) {
                 parsePolygons();
+
             }
         }
         aperture.addApertures(ADCommand);
+        aperture.addPolygons(PolygonCommand);
         apertureTemplate.addApertures(AMCommand);
         aperture.addToAperturesList(apertureTemplate.getMacros());
         aperture.showApertures();
@@ -78,14 +85,65 @@ public class Parser {
     }
 
     private void parseSettings() {
+        if (line.contains("MOMM*")) {
+            settings.setUnit("MM");
+            System.out.println("Unit found: Milimeters");
+        } else if (line.contains("MOIN*")) {
+            settings.setUnit("INCH");
+            System.out.println("Unit found: Inches");
+        }
 
+        Pattern pattern = Pattern.compile("FSLAX\\d(\\d)Y\\d(\\d)\\*");
+        Matcher matcher = pattern.matcher(line);
+        if (matcher.find()) {
+            settings.setPrecisionX(Integer.parseInt(matcher.group(1)));
+            settings.setPrecisionY(Integer.parseInt(matcher.group(2)));
+            System.out.println("Precission found: X = " + matcher.group(1) + "\t" + " Y = "  + matcher.group(2));
+        }
     }
 
     private void parsePolygons() {
+        final String beginCode = "G36*";
+        final String endCode = "G37*";
+        final Pattern REGEX_FIND_POLYGONS = Pattern.compile(".*X(-?\\d*)Y(-?\\d*)");
+        ArrayList<double[]> polygons = new ArrayList<>();
 
+        ArrayList<Double> pointsX = new ArrayList<>();
+        ArrayList<Double> pointsY = new ArrayList<>();
+        double[] size;
+        if (line.contains(beginCode)) {
+            line = scan.next();
+            while (!line.contains(endCode)) {
+                Matcher matcher = REGEX_FIND_POLYGONS.matcher(line);
+                if (matcher.find()) {
+                    pointsX.add((Double.parseDouble(matcher.group(1)) / settings.getPrecisionX()));
+                    pointsY.add((Double.parseDouble(matcher.group(2)) / settings.getPrecisionY()));
+                    line = scan.next();
+                } else {
+                    line = scan.next();
+                }
+            }
+
+            size = findSize(pointsX, pointsY);
+
+            polygons.add(size);
+
+            Polygon polygon;
+            polygon = new Polygon(9999, size[0], size[1], "Polygon");
+            PolygonCommand.add(polygon);
+            line = scan.next();
+        }
     }
 
     private void parseFlashes() {
 
     }
+
+    private double[] findSize(ArrayList<Double> x, ArrayList<Double> y) {
+        double[] size = new double[2];
+        size[0] = Collections.max(x) - Collections.min(x);
+        size[1] = Collections.max(y) - Collections.min(y);
+        return size;
+    }
+
 }
