@@ -35,6 +35,7 @@ public class ApertureTemplateDictionary {
                     if (elem.substring(0, 1).equals(",")) {
                         elem = elem.substring(1, elem.length() - 1);
                     }
+                    //if 0 == "21" dan matcher [2] en [3], als "4" dan [3] en [4]
                     matcher = REGEX_FIND_MACRO_PARAMS.matcher(elem);
                     while (matcher.find()) {
                         sizeX.add(Double.parseDouble(elem.split(",")[2]));

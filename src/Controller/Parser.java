@@ -98,7 +98,7 @@ public class Parser {
         if (matcher.find()) {
             settings.setPrecisionX(Integer.parseInt(matcher.group(1)));
             settings.setPrecisionY(Integer.parseInt(matcher.group(2)));
-            System.out.println("Precission found: X = " + matcher.group(1) + "\t" + " Y = "  + matcher.group(2));
+            System.out.println("Precission found: X = " + matcher.group(1) + "\t" + " Y = " + matcher.group(2));
         }
     }
 
@@ -111,28 +111,24 @@ public class Parser {
         ArrayList<Double> pointsX = new ArrayList<>();
         ArrayList<Double> pointsY = new ArrayList<>();
         double[] size;
-        if (line.contains(beginCode)) {
-            line = scan.next();
-            while (!line.contains(endCode)) {
-                Matcher matcher = REGEX_FIND_POLYGONS.matcher(line);
-                if (matcher.find()) {
-                    pointsX.add((Double.parseDouble(matcher.group(1)) / settings.getPrecisionX()));
-                    pointsY.add((Double.parseDouble(matcher.group(2)) / settings.getPrecisionY()));
-                    line = scan.next();
-                } else {
-                    line = scan.next();
-                }
+        while (!line.contains(endCode)) {
+            Matcher matcher = REGEX_FIND_POLYGONS.matcher(line);
+            if (matcher.find()) {
+                pointsX.add((Double.parseDouble(matcher.group(1)) / settings.getPrecisionX()));
+                pointsY.add((Double.parseDouble(matcher.group(2)) / settings.getPrecisionY()));
+                line = scan.next();
+            } else {
+                line = scan.next();
             }
-
-            size = findSize(pointsX, pointsY);
-
-            polygons.add(size);
-
-            Polygon polygon;
-            polygon = new Polygon(9999, size[0], size[1], "Polygon");
-            PolygonCommand.add(polygon);
-            line = scan.next();
         }
+
+        size = findSize(pointsX, pointsY);
+
+        polygons.add(size);
+        Polygon polygon;
+        polygon = new Polygon(9999, size[0], size[1], "Polygon");
+        PolygonCommand.add(polygon);
+
     }
 
     private void parseFlashes() {
@@ -141,8 +137,8 @@ public class Parser {
 
     private double[] findSize(ArrayList<Double> x, ArrayList<Double> y) {
         double[] size = new double[2];
-        size[0] = Collections.max(x) - Collections.min(x);
-        size[1] = Collections.max(y) - Collections.min(y);
+        size[0] = Collections.min(x) - Collections.max(x);
+        size[1] = Collections.min(y) - Collections.max(y);
         return size;
     }
 
