@@ -105,7 +105,7 @@ public class Parser {
     private void parsePolygons() {
         final String beginCode = "G36*";
         final String endCode = "G37*";
-        final Pattern REGEX_FIND_POLYGONS = Pattern.compile(".*X(-?\\d*)Y(-?\\d*)");
+        final Pattern REGEX_FIND_POLYGONS = Pattern.compile("[^G\\d?\\d?]X?(-?\\d*)Y?(-?\\d*)[^*]");
         ArrayList<double[]> polygons = new ArrayList<>();
 
         ArrayList<Double> pointsX = new ArrayList<>();
@@ -116,7 +116,8 @@ public class Parser {
             if (matcher.find()) {
                 pointsX.add((Double.parseDouble(matcher.group(1)) / settings.getPrecisionX()));
                 pointsY.add((Double.parseDouble(matcher.group(2)) / settings.getPrecisionY()));
-                line = scan.next();
+                System.out.println(pointsX + " . " + pointsY);
+               line = scan.next();
             } else {
                 line = scan.next();
             }
@@ -136,10 +137,13 @@ public class Parser {
     }
 
     private double[] findSize(ArrayList<Double> x, ArrayList<Double> y) {
+
         double[] size = new double[2];
-        size[0] = Collections.min(x) - Collections.max(x);
-        size[1] = Collections.min(y) - Collections.max(y);
+
+        size[0] = Math.abs((Collections.max(x) - Collections.min(x)));
+        size[1] = Math.abs((Collections.max(y) - Collections.min(y)));
         return size;
     }
-
 }
+
+
