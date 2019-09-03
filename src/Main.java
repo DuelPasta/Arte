@@ -11,7 +11,6 @@ public class Main extends Application {
         FileChooser configFileChooser = new FileChooser();
         File configFile = configFileChooser.showOpenDialog(null);
         Parser parser = new Parser(configFile);
-        parser.parse();
         System.exit(1);
 
     }

@@ -2,8 +2,11 @@ package Controller;
 
 import Model.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,11 +18,13 @@ public class Parser {
 
     private Scanner scan;
     private String line;
+    private File tempFile;
 
     private ArrayList<String> ADCommand = new ArrayList<>();
     private ArrayList<String> AMCommand = new ArrayList<>();
     private ArrayList<Polygon> PolygonCommand = new ArrayList<>();
-
+    ApertureDictionary aperture = new ApertureDictionary();
+    ApertureTemplateDictionary apertureTemplate = new ApertureTemplateDictionary();
 
     private final static String blockCommand = "%";
     private List<String> templine = new ArrayList<>();
@@ -31,14 +36,55 @@ public class Parser {
     public Parser(File file) {
         this.file = file;
         this.filelocation = file.getParent();
+
+        fileCleaner();
+        commander();
+        aperture.addApertures(ADCommand);
+        aperture.addPolygons(PolygonCommand);
+        apertureTemplate.addApertures(AMCommand);
+        aperture.addToAperturesList(apertureTemplate.getMacros());
+        aperture.showApertures();
     }
 
-    public void parse() {
-        ApertureDictionary aperture = new ApertureDictionary();
-        ApertureTemplateDictionary apertureTemplate = new ApertureTemplateDictionary();
+    private void fileCleaner() {
 
+        //Run this to clean up the gerber file in order for regex to work on all different software exports.
+        //Run through the file and enter newline after each (*) symbol. Removes % blocks.
+
+        Path src = Paths.get(this.file.getAbsolutePath());
+        Path dst = Paths.get(src + "-temp");
+        tempFile = new File(dst.toString());
+        BufferedReader reader;
+        BufferedWriter writer;
+        int ch;
         try {
-            scan = new Scanner(file);
+            reader = Files.newBufferedReader(src, StandardCharsets.UTF_8);
+            writer = Files.newBufferedWriter(dst, StandardCharsets.UTF_8);
+            while ((ch = reader.read()) != -1) {
+                switch (ch) {
+                    default:
+                        writer.write(ch);
+                        break;
+                    case 10:
+                        break;
+                    case 42:
+                        writer.newLine();
+                        break;
+                }
+            }
+            writer.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Missing file");
+            System.exit(0);
+        } catch (IOException e) {
+            System.out.println("Empty file");
+            System.exit(0);
+        }
+    }
+
+    private void commander() {
+        try {
+            scan = new Scanner(tempFile);
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -61,11 +107,6 @@ public class Parser {
 
             }
         }
-        aperture.addApertures(ADCommand);
-        aperture.addPolygons(PolygonCommand);
-        apertureTemplate.addApertures(AMCommand);
-        aperture.addToAperturesList(apertureTemplate.getMacros());
-        aperture.showApertures();
     }
 
     private void parseAmCommand() {
@@ -117,7 +158,7 @@ public class Parser {
                 pointsX.add((Double.parseDouble(matcher.group(1)) / settings.getPrecisionX()));
                 pointsY.add((Double.parseDouble(matcher.group(2)) / settings.getPrecisionY()));
                 System.out.println(pointsX + " . " + pointsY);
-               line = scan.next();
+                line = scan.next();
             } else {
                 line = scan.next();
             }
@@ -140,8 +181,11 @@ public class Parser {
 
         double[] size = new double[2];
 
-        size[0] = Math.abs((Collections.max(x) - Collections.min(x)));
-        size[1] = Math.abs((Collections.max(y) - Collections.min(y)));
+        // size[0] = Math.abs((Collections.max(x) - Collections.min(x)));
+        // size[1] = Math.abs((Collections.max(y) - Collections.min(y)));
+
+        size[0] = Collections.max(x) - Collections.min(x);
+        size[1] = Collections.max(y) - Collections.min(y);
         return size;
     }
 }
